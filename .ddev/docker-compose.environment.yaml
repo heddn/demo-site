@@ -1,0 +1,9 @@
+version: '3.6'
+
+services:
+  web:
+    environment:
+      - SIMPLETEST_DB=sqlite://tmp/test.sqlite
+      - SIMPLETEST_BASE_URL=http://localhost 
+      - PHP_IDE_CONFIG=serverName=demo-site.ddev.local
+      - BROWSERTEST_OUTPUT_DIRECTORY=/tmp

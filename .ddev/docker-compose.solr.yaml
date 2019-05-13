@@ -1,0 +1,59 @@
+# DDev Apache Solr recipe file.
+#
+# To use this in your own project:
+# 1. Copy this file to your project's ".ddev" directory.
+# 2. Create the folder path ".ddev/solr/conf".
+# 3. Copy the Solr configuration files for the appropriate plugin/module to
+#    ".ddev/solr/conf". For example, using Drupal 7's Search API Solr module,
+#    copy the files from its "solr-conf/6.x" directory into ".ddev/solr/conf"
+#    so that a file exists with the path ".ddev/solr/conf/solrconfig.xml".
+#
+# Note: The configuration files must be present before running `ddev start`.
+
+version: '3.6'
+
+services:
+  # This is the service name used when running ddev commands accepting the
+  # --service flag.
+  solr:
+    # This is the name of the container. It is recommended to follow the same
+    # name convention used in the main docker-compose.yml file.
+    container_name: ddev-${DDEV_SITENAME}-solr
+    # Controls the version of Solr which is installed.
+    image: solr:8
+    restart: "no"
+    # Solr is served from this port inside the container.
+    ports:
+      - 8983
+    # These labels ensure this service is discoverable by ddev.
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
+      com.ddev.app-url: $DDEV_URL
+    environment:
+      # This defines the host name the service should be accessible from. This
+      # will be sitename.ddev.local.
+      - VIRTUAL_HOST=$DDEV_HOSTNAME
+      # This defines the port the service should be accessible from at
+      # sitename.ddev.local.
+      - HTTP_EXPOSE=8983
+    volumes:
+      # This exposes a mount to the host system `.ddev/solr-conf` directory.
+      - "./solr:/solr-conf" 
+      # solr cores are stored on the 'solrdata' volume
+      - solrdata:/opt/solr/server/solr/mycores 
+    entrypoint:
+      - docker-entrypoint.sh
+      - solr-precreate
+      - dev
+      - /solr-conf
+# This links the Solr service to the web service defined in the main
+# docker-compose.yml, allowing applications running in the web service to
+# access the Solr service at sitename.ddev.local:8983.
+  web:
+    links:
+      - solr:$DDEV_HOSTNAME
+volumes:
+  # This creates a Docker volume that sticks around even if you remove or rebuild the container
+  solrdata: 
+
